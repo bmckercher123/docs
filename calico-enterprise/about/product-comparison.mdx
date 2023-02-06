@@ -10,7 +10,7 @@ description: Describes Tigera products and provides a feature comparison table.
 
 **Calico Cloud** is the SaaS version of {{prodname}}. It includes Image Assurance to scan and detect vulnerabilities in images, and container threat defense to detect malware. It also adds onboarding tutorials, and eliminates the cost to manage Elasticsearch logs and storage. 
 
-![tigera-product-overview](/img/calico/calico-products.svg)
+   ![tigera-product-overview](/img/calico/calico-products.svg)
 
 What is the best fit for you? It depends on your needs. The following table provides a high-level comparison.  
 
@@ -23,7 +23,7 @@ What is the best fit for you? It depends on your needs. The following table prov
 
 ## Product comparison by feature
 
-|                                                              |  Calico Open Source| Calico Cloud       | {{prodname}}               |
+|                                                              | {{prodname}} Open Source | {{prodname}} Cloud       | {{prodname}} Enterprise  |
 | ------------------------------------------------------------ | ------------------------ | ------------------------ | ------------------------ |
 | **Networking**                                               |                          |                          |                          |
 | High-performance, scalable pod networking                    | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
@@ -46,7 +46,7 @@ What is the best fit for you? It depends on your needs. The following table prov
 | Policy recommendation                                        |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Preview and staged network policy                            |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Policy integration for third-party firewalls                 |                          | <center>&#10003</center> | <center>&#10003</center> |
-| Network sets to limit IP ranges for egress and ingress traffic to workloads                         |                          | <center>&#10003</center> | <center>&#10003</center> |
+| Network sets to limit IP ranges for egress and ingress traffic to workloads | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
 | **Data**                                                     |                          |                          |                          |
 | Data-in-transit encryption for pod traffic using WireGuard   | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
 | SIEM integration                                             |                          | <center>&#10003</center> | <center>&#10003</center> |
@@ -57,6 +57,7 @@ What is the best fit for you? It depends on your needs. The following table prov
 | Apply policy to host-forwarded traffic                       | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
 | **Dataplane**                                                |                          |                          |                          |
 | eBPF                                                         | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
+| iptables                                                     | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
 | Windows HNS                                                  | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
 | VPP                                                          | <center>&#10003</center> |                          |                          |
 | **Images**                                                   |                          |                          |                          |
@@ -67,7 +68,7 @@ What is the best fit for you? It depends on your needs. The following table prov
 | Service Graph                                                |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Threat graph                                                 |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Packet capture                                               |                          | <center>&#10003</center> | <center>&#10003</center> |
-| Elasticsearch  logs (flow, l7, audit, bgp, dns, events)      |                          |                          |                          |
+| Elasticsearch  logs (flow, l7, audit, bgp, dns, events)      |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Alerts                                                       |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Kibana DNS dashboards                                        |                          | <center>&#10003</center> | <center>&#10003</center> |
 | Traffic Flow Visualizer                                      |                          | <center>&#10003</center> | <center>&#10003</center> |
@@ -82,6 +83,5 @@ What is the best fit for you? It depends on your needs. The following table prov
 | **Reports**                                                  |                          |                          |                          |
 | Compliance reports                                           |                          | <center>&#10003</center> | <center>&#10003</center> |
 | CIS benchmark reports                                        |                          | <center>&#10003</center> | <center>&#10003</center> |
-| **Monitor {{prodname}} components**                                |                          |                          |                          |
+| **Monitor Calico components**                                |                          |                          |                          |
 | Prometheus                                                   | <center>&#10003</center> | <center>&#10003</center> | <center>&#10003</center> |
-| BYO Prometheus                                               |                          | <center>&#10003</center> | <center>&#10003</center> |
