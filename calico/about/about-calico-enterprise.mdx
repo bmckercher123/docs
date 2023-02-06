@@ -1,0 +1,68 @@
+---
+description: A brief description of Calico, deployment options, and features.
+---
+
+# About Calico 
+
+## What is {{prodname}}?
+
+{{prodname}} is a free, self-managed networking and security solution for containers, virtual machines, and native host-based workloads. {{prodname}} provides networking, network policy, and IP address management for cloud-native applications. 
+
+## Deployment options
+
+{{prodname}} is compromised of two decoupled components that offer the widest deployment options across platforms:
+
+- **{{prodname}} CNI** to configure networking resources
+- **{{prodname}} network policy** to secure workload and host endpoints
+
+For example, if you use Kubernetes for AWS (self-managed) or EKS (public cloud), you can use either of these options:
+
+- {{prodname}} CNI and {{prodname}} network policy
+- AWS VPC CNI with {{prodname}} network policy 
+
+To understand the {{prodname}} deployment options, check out these popular platforms:
+
+- [AKS](../getting-started/kubernetes/managed-public-cloud/aks.mdx)
+- [Azure](../getting-started/kubernetes/self-managed-public-cloud/azure.mdx)
+- [Digital Ocean](../getting-started/kubernetes/self-managed-public-cloud/do.mdx)
+- [EKS](../getting-started/kubernetes/managed-public-cloud/eks.mdx)
+- [Flannel/Canal](../getting-started/kubernetes/flannel/install-for-flannel.mdx)
+- [GCE](../getting-started/kubernetes/self-managed-public-cloud/gce.mdx)
+- [GKE](../getting-started/kubernetes/managed-public-cloud/gke.mdx)
+- [IKS](../getting-started/kubernetes/managed-public-cloud/iks.mdx)
+- [K3s](../getting-started/kubernetes/k3s/index.mdx)
+- [kOps on AWS](../getting-started/kubernetes/self-managed-public-cloud/aws.mdx)
+- [Kubernetes-kubeadm](../getting-started/kubernetes/self-managed-onprem/onpremises.mdx)
+- [MicroK8s](../getting-started/kubernetes/microk8s.mdx)
+- [Minikube](../getting-started/kubernetes/minikube.mdx)
+- [OpenShift](../getting-started/kubernetes/openshift/index.mdx)
+- [OpenStack](../getting-started/openstack/index.mdx)
+- [RKE](../getting-started/kubernetes/rancher.mdx)
+- [Calico for Windows](../getting-started/kubernetes/windows-calico/index.mdx)
+
+## Installation options
+
+You can install {{prodname}} using Kubernetes operators, manifests (YAMLs), or Helm charts (Helm 3). 
+
+There are several quickstart options to start working with {{prodname}} in under 15 minutes:
+
+- [Quickstart for Calico on Kubernetes](../getting-started/kubernetes/quickstart.mdx)
+- [Quickstart for Calico on K3s](../getting-started/kubernetes/k3s/quickstart.mdx)
+- [Quickstart for Calico on minikube](../getting-started/kubernetes/minikube.mdx)
+- [Quickstart for Calico on MicroK8s](../getting-started/kubernetes/microk8s.mdx)
+
+## Feature summary
+
+The following table summarizes the main {{prodname}} features. To see a detailed feature comparison, see [Product comparison](../about/product-comparison.mdx#product-comparison-by-feature). 
+
+| Feature                      | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| Dataplanes                   | eBPF, standard Linux iptables, and Windows HNS.              |
+| Install                      | Install on Kubernetes clusters and non-cluster hosts.        |
+| Upgrade                      | Seamless upgrade to **Calico Cloud** and **Calico Enterprise**. |
+| Networking                   | - Scalable pod networking using BPG or overlay networking<br />- Customizable advanced IP address management |
+| Security                     | - Network policy enforcement for workload and host endpoints<br />- Data-in-transit encryption using WireGuard |
+| Monitoring Calico components | Monitor Calico component metrics using Prometheus.           |
+| User interfaces              | CLIs: `kubectl` and `calicoctl`                              |
+| APIs                         | - **Calico API** for Calico resources <br />- **Installation API** for operator installation and configuration |
+| Support and maintenance      | Community-driven. {{prodname}} powers 2M+ nodes daily across 166 countries. |
