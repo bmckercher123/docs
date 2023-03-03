@@ -31,7 +31,7 @@ eBPF (or "extended Berkeley Packet Filter"), is a technology that allows safe mi
 
 **Required**
 
-- Review [Requirements, limitations, and performance](install.mdx#before-you-begin)
+<ebpfsysreqs />
 
 ## How to
 
@@ -96,12 +96,12 @@ The best way to do that varies by Kubernetes distribution:
   `api-int.<cluster_name>.<base_domain>` should point to the API server or to the load balancer in front of the
   API server. Use that (filling in the `<cluster_name>` and `<base_domain>` as appropriate for your cluster) for the
   `KUBERNETES_SERVICE_HOST` below. Openshift uses 6443 for the `KUBERNETES_SERVICE_PORT`.
-- For AKS and EKS clusters you should use the FQDN of the API server's load balancer. This can be found with
-  ```
+- For AKS and EKS clusters you should use the FQDN of the API server's load balancer. This can be found with:
+  ```batch
   kubectl cluster-info
   ```
   which gives output like the following:
-  ```
+  ```batch
   Kubernetes master is running at https://60F939227672BC3D5A1B3EC9744B2B21.gr7.us-west-2.eks.amazonaws.com
   ...
   ```
@@ -146,7 +146,7 @@ This section explains how to disable `kube-proxy` in some common environments.
 
 For a cluster that runs `kube-proxy` in a `DaemonSet` (such as a `kubeadm`-created cluster), you can disable `kube-proxy` reversibly by adding a node selector to `kube-proxy`'s `DaemonSet` that matches no nodes, for example:
 
-```
+```batch
 kubectl patch ds -n kube-system kube-proxy -p '{"spec":{"template":{"spec":{"nodeSelector":{"non-calico": "true"}}}}}'
 ```
 
@@ -154,8 +154,7 @@ Then, should you want to start `kube-proxy` again, you can simply remove the nod
 
 :::note
 
-This approach is not suitable for AKS with Azure CNI since that platform makes use of the Kubernetes add-on manager.
-the change will be reverted by the system. For AKS, you should follow [Avoiding conflicts with kube-proxy](#avoiding-conflicts-with-kube-proxy)
+This approach is not suitable for AKS with Azure CNI since that platform makes use of the Kubernetes add-on manager. The change will be reverted by the system. For AKS, you should follow [Avoiding conflicts with kube-proxy](#avoiding-conflicts-with-kube-proxy)
 below.
 
 :::
@@ -178,7 +177,7 @@ kubectl patch networks.operator.openshift.io cluster --type merge -p '{"spec":{"
 
 If you cannot disable `kube-proxy` (for example, because it is managed by your Kubernetes distribution), then you _must_ change Felix configuration parameter `BPFKubeProxyIptablesCleanupEnabled` to `false`. This can be done with `kubectl` as follows:
 
-```
+```batch
 kubectl patch felixconfiguration.p default --patch='{"spec": {"bpfKubeProxyIptablesCleanupEnabled": false}}'
 ```
 
@@ -210,13 +209,13 @@ Direct return mode skips a hop through the network for traffic to services (such
 
 DSR mode is disabled by default; to enable it, set the `BPFExternalServiceMode` Felix configuration parameter to `"DSR"`. This can be done with `kubectl`:
 
-```
+```batch
 kubectl patch felixconfiguration.p default --patch='{"spec": {"bpfExternalServiceMode": "DSR"}}'
 ```
 
 To switch back to tunneled mode, set the configuration parameter to `"Tunnel"`:
 
-```
+```batch
 kubectl patch felixconfiguration.p default --patch='{"spec": {"bpfExternalServiceMode": "Tunnel"}}'
 ```
 
@@ -234,7 +233,7 @@ To revert to standard Linux networking:
 
 1. If you disabled `kube-proxy`, re-enable it (for example, by removing the node selector added above).
 
-   ```
+   ```batch
    kubectl patch ds -n kube-system kube-proxy --type merge -p '{"spec":{"template":{"spec":{"nodeSelector":{"non-calico": null}}}}}'
    ```
 
