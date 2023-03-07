@@ -5,6 +5,10 @@ description: Steps to enable the eBPF dataplane on an existing cluster.
 # Enable eBPF on an existing cluster
 
 import EbpfValue from '@site/calico-cloud/_includes/content/_ebpf-value.mdx';
+import ebpfsysreqs from '@site/calico-cloud/_includes/content/_ebpf-sys-reqs.mdx';
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 ## Big picture
 
@@ -31,7 +35,7 @@ eBPF (or "extended Berkeley Packet Filter"), is a technology that allows safe mi
 
 **Required**
 
-- Review [Requirements, limitations, and performance](install.mdx#before-you-begin)
+<ebpfsysreqs />
 
 ## How to
 

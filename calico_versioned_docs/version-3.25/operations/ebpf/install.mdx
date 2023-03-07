@@ -5,6 +5,7 @@ description: Install Calico in eBPF mode.
 # Install in eBPF mode
 
 import EbpfValue from '@site/calico_versioned_docs/version-3.25/_includes/content/_ebpf-value.mdx';
+import ebpfsysreqs from '@site/calico_versioned_docs/version-3.25/_includes/content/_ebpf-sys-reqs.mdx';
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -35,45 +36,7 @@ and in particular, pushing the networking capabilities of the latest Linux kerne
 
 ## Before you begin
 
-### Supported
-
-- x86-64
-
-- Distributions:
-
-  - Generic or kubeadm
-  - kOps
-  - OpenShift
-  - EKS
-  - AKS
-
-- Linux distribution/kernel:
-
-  - Ubuntu 20.04.
-  - Red Hat v8.2 with Linux kernel v4.18.0-193 or above (Red Hat have backported the required features to that build).
-  - Another [supported distribution](../../getting-started/kubernetes/requirements.mdx) with Linux kernel v5.3 or above.
-
-- An underlying network fabric that allows VXLAN traffic between hosts. In eBPF mode, VXLAN is used to forward Kubernetes NodePort traffic.
-
-### Not supported
-
-- Other processor architectures.
-
-- Distributions:
-
-  - GKE. This is because of an incompatibility with the GKE CNI plugin.
-
-  - RKE: eBPF mode cannot be enabled at install time because RKE doesn't provide
-    a stable address for the API server. However, by following [these instructions](enabling-ebpf.mdx),
-    it can be enabled as a post-install step.
-
-- Clusters with some eBPF nodes and some standard dataplane and/or Windows nodes.
-- IPv6.
-- Host endpoint `doNotTrack` policy (other policy types are supported).
-- Floating IPs.
-- SCTP (either for policy or services).
-- `Log` action in policy rules.
-- Tagged VLAN devices.
+<ebpfsysreqs />
 
 ### Performance
 
