@@ -790,7 +790,6 @@ module.exports = {
           label: 'Component resources',
           link: {type: 'doc', id: 'reference/component-resources/index'},
           items: [
-            'reference/component-resources/configuration',
             {
               type: 'category',
               label: 'Calico Enterprise Kubernetes controllers',

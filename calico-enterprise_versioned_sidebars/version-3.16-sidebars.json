@@ -990,7 +990,6 @@
             "id": "reference/component-resources/index"
           },
           "items": [
-            "reference/component-resources/configuration",
             {
               "type": "category",
               "label": "Calico Enterprise Kubernetes controllers",
