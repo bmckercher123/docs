@@ -27,6 +27,7 @@ module.exports = {
            'about/kubernetes-training/about-kubernetes-ingress',
            'about/kubernetes-training/about-kubernetes-egress',
            'about/kubernetes-training/about-kubernetes-services',
+           'about/kubernetes-training/kubernetes-policy-basic'
            'about/kubernetes-training/about-ebpf',
         ],
        }, 
