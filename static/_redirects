@@ -2,6 +2,9 @@
 # Manifest redirects to help out some 3.15 stragglers.
 /v3.15/manifests/* https://downloads.tigera.io/ee/v3.15.1/manifests/:splat 301!
 
+## Request from Marketing for Calico community posts
+/calico/:version/manifests/*  https://raw.githubusercontent.com/projectcalico/calico/:version/manifests/* 301
+
 /calico/latest/manifests/calico.yaml  https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml 301
 
 # Splat rule for 'latest' X.Y to 'latest' URL
@@ -43,6 +46,7 @@
 /calico/latest/about/about-kubernetes-egress /calico/latest/about/kubernetes-training/about-kubernetes-egress 301
 /calico/latest/about/about-ebpf /calico/latest/about/kubernetes-training/about-ebpf 301
 
+# Image Assurance (CC)
 /calico-cloud/image-assurance/scan-image-registries /calico-cloud/image-assurance/scanners/cli-based-scanner 301
 
 ## Reorganizing 'About' section for CE:
