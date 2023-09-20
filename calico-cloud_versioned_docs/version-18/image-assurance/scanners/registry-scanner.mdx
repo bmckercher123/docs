@@ -1,0 +1,73 @@
+---
+description: Scan images in container registeries.
+---
+
+# Scan images in container registries
+
+Scan images in container registries at any time, on any infrastructure, including Kubernetes.
+
+## Value
+
+Add a layer of defense for images that don’t go through a pipeline (for example, third-party images), but are published to registries. If CVEs are missed in your build pipeline, you can catch them before they are deployed.
+
+## Concepts
+
+You can deploy the registry scanner wherever you want. Locally on a laptop. Anywhere. And it doesn’t have to be for Kubernetes.
+
+To use this option, all you need to do is:
+- Specify the registry paths to the images you want to scan
+- Provide permissions for the scanner to access your registries
+- Get a token for access to the Image Assurance API
+
+Based on the paths you specify, the scanner recursively scans all images in the registry once, and sends results to the Image Assurance dashboard in Manager UI. Because the scanner is not running continuously, it may take some time for results to display in the dashboard, especially if you have many images or large images.
+
+## Before you begin
+
+**Required**
+
+- Images must be available locally through the container runtime environment where the Image Assurance scanner is running.
+- All container registries must implement the [Docker V2 API](https://docs.docker.com/registry/spec/api/)
+- AKS clusters: if you are using Kubernetes v1.19 or higher, containerd must be your default runtime
+
+**Supported registry platforms**
+
+- Amazon ECR
+- Azure Container Registry
+- Docker, using a container runtime
+
+**Limitations**
+
+- The registry scanner is available as an image (not using Tigera operator installation)
+- You can scan images from only one of the supported registry platforms/account per instance
+
+## How to
+
+- [Install the scanner for each registry](#install-the-scanner-for-each-registry)
+- [Set up registry credentials](#set-up-registry-credentials)
+- [Configure image registry paths for scanner](#configure-image-registry-paths-for-scanner)
+- [Scan images and send results to Calico Cloud](#scan-images-and-send-results-calico-cloud)
+- [Troubleshoot](#troubleshoot)
+- [Get scanner updates](#get-scanner-updates)
+
+### Install the scanner for each registry
+
+### Set up registry credentials
+
+### Configure image registry paths for scanner
+
+### Scan images and send results to Calico Cloud
+
+### Troubleshoot
+
+### Get scanner updates
+
+To get the latest updates, you must download the latest version of the  scanner binary. Run the following command and verify that it matches the version displayed:
+
+```shell
+./tigera-scanner version
+{{imageassuranceversion}}
+```
+
+## Next step
+
+[Understand scan results in Manager UI](../understanding-scan-sresults)
