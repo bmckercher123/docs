@@ -63,7 +63,7 @@ If you have a valid /.docker/config.json, you can also mount these while running
 docker run -v ~/.docker/config.json:/.docker/config.json quay.io/tigera/image-assurance-registry-scanner:v1.10.4
 ```
 
-The registry scanner also supports authentication using AZURE and AWS credentials. If you use these credentials, the registry scanner is able to
+The registry scanner also supports authentication using AZURE and AWS credentials. If you use these credentials, the registry scanner can retrieve images that do not have tags associated with them. 
 retrieve images with no tags associated with them.
 
 Azure credentials needed:
