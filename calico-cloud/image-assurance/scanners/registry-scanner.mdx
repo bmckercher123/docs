@@ -42,31 +42,107 @@ Based on the paths you specify, the scanner recursively scans all images in the 
 
 ## How to
 
-- [Install the scanner for each registry](#install-the-scanner-for-each-registry)
-- [Set up registry credentials](#set-up-registry-credentials)
-- [Configure image registry paths for scanner](#configure-image-registry-paths-for-scanner)
+- [Download the registry scanner](#download-the-registry-scanner)
+- [Setting up registry scanner](#set-up-registry-credentials)
 - [Scan images and send results to Calico Cloud](#scan-images-and-send-results-calico-cloud)
 - [Troubleshoot](#troubleshoot)
-- [Get scanner updates](#get-scanner-updates)
+- [Get registry scanner updates](#get-registry-scanner-updates)
 
-### Install the scanner for each registry
+### Download the registry scanner
 
-### Set up registry credentials
+The registry scanner comes in a docker image. Simply run `docker pull quay.io/tigera/image-assurance-registry-scanner:v1.10.4` in order to retrieve it.
 
-### Configure image registry paths for scanner
+### Setting up registry scanner
+
+#### Credentials
+
+The registry scanner supports scanning all registries as long as the docker credentials are provided.
+Providing the `DOCKER_USERNAME` and `DOCKER_PASSWORD` lets the registry scanner retrieve images that the credentials have access to. Retrieving images 
+using these credentials will only retrieve images with tags.
+
+If you have a valid /.docker/config.json, you can also mount these while running the registry scanner.
+```
+docker run -v ~/.docker/config.json:/.docker/config.json quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+```
+
+The registry scanner also supports authentication using AZURE and AWS credentials. If you use these credentials, the registry scanner is able to
+retrieve images with no tags associated with them.
+
+Azure credentials needed:
+`AZURE_CLIENT_ID` 
+`AZURE_CLIENT_SECRET` or `AZURE_FEDERATED_TOKEN`
+`AZURE_TENANT_ID`
+
+AWS credentials needed:
+`AWS_ACCESS_KEY_ID`
+`AWS_SECRET_ACCESS_KEY`
+`AWS_REGION`
+
+The registry scanner currently scans one registry at a time. If you specify the Azure or AWS credentials, the docker username and password will not be used.
+
+#### Required Inputs
+
+The registry scanner requires:
+ 
+`REGISTRY` - the registry you want to scan.
+`IMAGE_ASSURANCE_API_URL` - You can get this URL in the manager UI.
+`IMAGE_ASSURANCE_API_TOKEN` - You can get this token in the manager UI. 
+Either the `DOCKER_USERNAME` and `DOCKER_PASSWORD`, Azure credentials, or AWS credentials. 
+
+#### Optional Inputs 
+
+`REGISTRY_FILTER` - with thousands of repositories and images, sometimes we do not want to scan everything as it could be very time consuming.
+This environment variable supports a comma separated list on what you want to scan.
+
+Example: for a gcr registry that contains:
+```
+gcr.io/prod-env/api
+gcr.io/staging-env/api 
+gcr.io/dev/api
+```
+You might not care about the dev "sub" registry. Simply provide 1-e REGISTRY_FILTER=prod-env,staging-env` to filter out the images under dev.
 
 ### Scan images and send results to Calico Cloud
 
+Example run for a gcr registry with Docker Username and Password:
+
+```
+docker run -e REGISTRY=gcr.io -e IMAGE_ASSURANCE_API_URL=https://<clustId>-management.dev.calicocloud.io/bast
+ -e IMAGE_ASSURANCE_API_TOKEN=$TOKEN -e DOCKER_USERNAME=<username> -e DOCKER_PASSWORD=<password>
+ quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+```
+
+Example run for an acr registry with Azure credentials:
+
+```
+docker run -e REGISTRY=your-org.azurecr.io -e IMAGE_ASSURANCE_API_URL=https://<clustId>-management.dev.calicocloud.io/bast
+ -e IMAGE_ASSURANCE_API_TOKEN=$TOKEN -e AZURE_CLIENT_ID=<azure-client-id> -e AZURE_CLIENT_SECRET=<azure-client-secret> -e AZURE_TENANT_ID=<azure-tenant-id>
+ quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+```
+
+Example run for an ecr registry with AWS credentials:
+
+```
+docker run -e REGISTRY=gcr.io -e IMAGE_ASSURANCE_API_URL=https://<clustId>-management.dev.calicocloud.io/bast
+ -e IMAGE_ASSURANCE_API_TOKEN=$TOKEN -e AWS_ACCESS_KEY_ID=<aws-access-key> -e AWS_SECRET_ACCESS_KEY=<aws-secret-access-key> -e AWS_REGION=<aws-region>
+ quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+```
+
+Example run when mounting the dockerfile:
+
+```
+docker run -e REGISTRY=gcr.io -e IMAGE_ASSURANCE_API_URL=https://<clustId>-management.dev.calicocloud.io/bast
+ -e IMAGE_ASSURANCE_API_TOKEN=$TOKEN -v ~/.docker/config.json/:/.docker/config.json quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+```
+
 ### Troubleshoot
 
-### Get scanner updates
+If you have troubles authenticating with the registry, check that the registry credentials are correct.
+If you have trouble uploading the results to the calico cloud database, check that the api token and url are correct.
 
-To get the latest updates, you must download the latest version of the  scanner binary. Run the following command and verify that it matches the version displayed:
+### Get registry scanner updates
 
-```shell
-./tigera-scanner version
-{{imageassuranceversion}}
-```
+Check our quay.io/tigera repository for the latest registry scanner versions.
 
 ## Next step
 
