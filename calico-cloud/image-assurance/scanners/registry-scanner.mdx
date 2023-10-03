@@ -37,6 +37,7 @@ Based on the paths you specify, the scanner recursively scans all images in the 
 
 - The registry scanner is available as an image (not using Tigera operator installation)
 - You can scan images from only one of the supported registry platforms/account per instance
+- If you use the registry scanner with Docker, only tagged images are scanned. However, if you use the scanner with Amazon AWS or Azure credentials, both tagged and untagged images are scanned.
 
 ## How to
 
@@ -54,18 +55,16 @@ The registry scanner comes in a docker image. To get the image, run `docker pull
 
 #### Credentials
 
-The registry scanner supports scanning all registries as long as the docker credentials are provided.
-Providing the `DOCKER_USERNAME` and `DOCKER_PASSWORD` lets the registry scanner retrieve images that the credentials have access to. Retrieving images 
-using these credentials will only retrieve images with tags.
+The registry scanner supports scanning a registry when the docker credentials for that registry are provided.
+Using the environment variables: `DOCKER_USERNAME` and `DOCKER_PASSWORD`, the registry scanner is able to scan images with tags.
+This means any untagged images residing in your image registry will not be pulled and scanned.
 
-If you have a valid /.docker/config.json, you can also mount these while running the registry scanner.
+If you have a valid /.docker/config.json, you can also mount this config file onto the container while running the registry scanner.
 ```
-docker run -v ~/.docker/config.json:/.docker/config.json quay.io/tigera/image-assurance-registry-scanner:v1.10.4
+docker run -e ... -v ~/.docker/config.json:/.docker/config.json quay.io/tigera/image-assurance-registry-scanner:v1.10.4
 ```
 
-The registry scanner also supports authentication using AZURE and AWS credentials. If you use these credentials, the registry scanner is able to
-retrieve images with no tags associated with them.
-
+The registry scanner also supports authentication using AZURE and AWS credentials.
 Azure credentials needed:
 `AZURE_CLIENT_ID` 
 `AZURE_CLIENT_SECRET` or `AZURE_FEDERATED_TOKEN`
@@ -76,21 +75,24 @@ AWS credentials needed:
 `AWS_SECRET_ACCESS_KEY`
 `AWS_REGION`
 
-The registry scanner currently scans one registry at a time. If you specify the Azure or AWS credentials, the docker username and password will not be used.
+The registry scanner currently scans one registry at a time. If you specify the Azure or AWS credentials, the Docker username and password will not be used.
 
-#### Required Inputs
+:::note
+If you use the registry scanner with AZURE and AWS credentials, the registry scanner will retrieve images with no tags associated with them.
+:::
+
+#### Required inputs
 
 The registry scanner requires:
  
-`REGISTRY` - the registry you want to scan.
-`IMAGE_ASSURANCE_API_URL` - You can get this URL in the manager UI.
-`IMAGE_ASSURANCE_API_TOKEN` - You can get this token in the manager UI. 
+`REGISTRY` - the registry you want to scan. (gcr.io)
+`IMAGE_ASSURANCE_API_URL` - Get this URL in the Manager UI.
+`IMAGE_ASSURANCE_API_TOKEN` - Get this token in the Manager UI. 
 Either the `DOCKER_USERNAME` and `DOCKER_PASSWORD`, Azure credentials, or AWS credentials. 
 
-#### Optional Inputs 
+#### Optional inputs 
 
-`REGISTRY_FILTER` - with thousands of repositories and images, sometimes we do not want to scan everything as it could be very time consuming.
-This environment variable supports a comma separated list on what you want to scan.
+`REGISTRY_FILTER` - variable to limit scanning time when you have thousands of repositories and images. Supports a comma-separated list. 
 
 Example: for a gcr registry that contains:
 ```
@@ -98,9 +100,9 @@ gcr.io/prod-env/api
 gcr.io/staging-env/api 
 gcr.io/dev/api
 ```
-You might not care about the dev "sub" registry. Simply provide 1-e REGISTRY_FILTER=prod-env,staging-env` to filter out the images under dev.
+You might not care about the dev "sub" registry. Simply provide -e REGISTRY_FILTER=prod-env,staging-env` to filter out the images under dev.
 
-### Scan images and send results to Calico Cloud
+### Scan images and send results to {{prodname}}
 
 Example run for a gcr registry with Docker Username and Password:
 
@@ -135,8 +137,8 @@ docker run -e REGISTRY=gcr.io -e IMAGE_ASSURANCE_API_URL=https://<clustId>-manag
 
 ### Troubleshoot
 
-If you have troubles authenticating with the registry, check that the registry credentials are correct.
-If you have trouble uploading the results to the calico cloud database, check that the api token and url are correct.
+If you have trouble authenticating with the registry, check that the registry credentials are correct.
+If you have trouble uploading the results to the {{prodname}}, check that the API token and URL are correct.
 
 ### Get registry scanner updates
 
