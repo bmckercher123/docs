@@ -419,8 +419,9 @@ module.exports = {
           link: {type: 'doc', id: 'multicluster/federation/index'},
           items: [
             'multicluster/federation/overview',
-            'multicluster/federation/kubeconfig',
-            'multicluster/federation/services-controller',
+            'multicluster/federation/set-up-cluster-mesh',
+            'multicluster/federation/set-up-services',
+            'multicluster/federation/create-policy-for-cluster-mesh',
             'multicluster/federation/aws',
           ],
         },

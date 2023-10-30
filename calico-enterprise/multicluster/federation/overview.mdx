@@ -2,56 +2,38 @@
 description: Configure a cluster mesh for cross-cluster endpoints sharing, cross-cluster connectivity, and cross-cluster service discovery.
 ---
 
-# Overview
+# About Calico Enterprise cluster mesh
 
-## Big picture
-
-Secure cross-cluster connections with identity-aware network policy, and federate services for cross-cluster service discovery.
-
-Utilize {{prodname}} to establish cross-cluster connectivity.
-
+{{prodname}} cluster mesh provides federation capabilities to secure, observe communication, and troubleshoot workloads across multiple clusters.
 
 ## Value
 
-At some point in your Kubernetes journey, you may have applications that need to access services and workloads running in another cluster.
+{{prodname}} cluster mesh is for organizations who are building and deploying services across multiple clusters for high availability, disaster recovery, application isolation, compliance, and latency. Advantages include:
 
-By default, pods can only communicate with pods within the same cluster. Additionally, services and network policy only select pods from within the same cluster. {{prodname}} can help overcome these barriers by forming a cluster mesh the following features:
-- **Federated endpoint identity**
+- Multi-cluster federation works across hybrid and multi-cloud
+- Multi-cluster observability from the network to the application layer
+- No need for an additional management plane
+- Sidecar-less dataplane with Envoy as a DaemonSet
+- WireGuard encryption
+- {{prodname}} advanced tier and network policy engine
 
-  Allow a local Kubernetes cluster to include the workload endpoints (pods) and host endpoints of a remote cluster in the calculation of local network policies applied on each node of the local cluster.
+## Implementation
 
-- **Federated services**
+{{prodname}} cluster mesh implements and extends [Kubernetes multi-cluster](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/). The following table summarizes the implementation and level of effort.
 
-  Enable a local Kubernetes Service to populate with Endpoints selected from both local cluster and remote cluster Services.
+| For... | Cluster mesh uses... | Resources and tools | Requires configuration? |
+| --------------------------- | --------------------------- | --------------------------- | --------------------------- |
+| Cross-cluster network connectivity | Multi-cluster networking | **Calico CNI** establishes pod IP routes across multiple clusters. | No |
+| Cross-cluster endpoint sharing | Federated endpoints | A **kubconfig file** in each cluster provides authentication for endpoint sharing. | Yes |
+|                          |                                             | The **RemoteClusterConfiguration** resource synchronizes all communication between clusters including: remote identity-aware policy, federated services, and multi-cluster networking. | Yes |
+| Cross-cluster service discovery and sharing | Federated services | You create federated services and **Tigera Federated Service Controller** automaticaly monitors and maintains endpoint identity for each locally-federated service. | Yes |
+| Cross-cluster visibility | Manager UI | Use **Service Graph** to see workload, network, and services connections. | No |
+|                          |                    | Generate **policy recommendations** to quickly secure traffic from day one. | No |
+|                          |                              | Use traffic **flow logs** to troubleshoot federated services. | No |
+|                          |                            | Get alerts on threats in the **Service Events Management dashboards**. | No |
 
-- **Multi-cluster networking**
+## Next step
 
-  Establish an overlay network between clusters to provide cross-cluster connectivity with {{prodname}}.
-
-
-## Concepts
-
-### Pod IP routability
-
-{{prodname}} cluster mesh is implemented at Kubernetes at the network layer, based on pod IPs.
-
-Taking advantage of federated workload endpoint identity and federated services requires that pod IPs are routable between clusters. This is because identity-aware network policy requires source and destination pod IPs to be preserved in order to establish pod identity. Additionally, the Endpoint IPs of pods selected by a federated Service must be routable in order for that Service to be of value.
-
-You can utilize {{prodname}} multi-cluster networking to establish pod IP routability between clusters via overlay. Alternatively, you can manually set up pod IP routability between clusters without encapsulation (e.g. VPC routing, BGP routing).
+- [Set up a cluster mesh](../federation/set-up-cluster-mesh)
 
 
-### Federated endpoint identity
-
-Federated endpoint identity in a cluster mesh allows a local Kubernetes cluster to include the workload endpoints (pods) and host endpoints of a remote cluster in the calculation of the local policies for each node, e.g. Cluster A network policy allows its application pods to talk to database pods in Cluster B.
-
-This feature does not _federate network policies_; policies from a remote cluster are not applied to the endpoints on the local cluster, and the policy from the local cluster is rendered only locally and applied to the local endpoints.
-
-### Federated services
-
-Federated services in a cluster mesh works with federated endpoint identity, providing cross-cluster service discovery for a local cluster. If you have an existing service discovery mechanism, this feature is optional.
-
-Federated services use the Tigera Federated Services Controller to federate all Kubernetes endpoints (workload and host endpoints) across all of the clusters. The Federated Services Controller accesses service and endpoints data in the remote clusters directly through the Kubernetes API.
-
-## Next steps
-
-[Configure remote-aware policy and multi-cluster networking](kubeconfig.mdx)

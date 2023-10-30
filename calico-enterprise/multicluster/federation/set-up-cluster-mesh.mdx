@@ -1,0 +1,272 @@
+---
+description: Set up a cluster mesh.
+---
+
+# Set up a cluster mesh
+
+## Big picture
+
+Set up a {{prodname}} cluster mesh to provide cross-cluster connectivity and cross-cluster endpoint sharing for your Kubernetes deployment.
+
+## Concepts
+
+### Clusters can have dual functions
+
+Each cluster in the cluster mesh can function both as a **local** and **remote** cluster:
+- Local clusters get endpoint and routing data from remote clusters
+- Remote clusters authorize local clusters to get endpoint and routing data
+
+## Before you begin
+
+**Supported**
+- Calico CNI using VXLAN overlay
+
+**Required**
+
+Verify the following requirements for multi-cluster networking:
+- Pod IPs are routable between clusters. If your clusters are using Calico CNI with VXAN overlay, pod IP routability happens automatically. If you are VPC or BPG routing without an overlay, you must manually set up pod IP routability between clusters.
+- All nodes in the cluster mesh can establish connections to each other via their private IP.
+- VXLAN is enabled on participating IP pools in all clusters, and their IP pool CIDRs are not overlapping.
+- `routeSource` and `vxlan` FelixConfiguration options must be aligned across clusters, and traffic on the `vxlanPort` must be allowed between nodes in the cluster mesh.
+
+- [calicoq is installed](../operations/clis/calicoq/installing)
+
+## How to
+
+For each cluster in the mesh, complete these steps:
+- [Enable authentication between local and remote clusters](#Enable-authentication-between-local-and-remote-clusters)
+- [Enable synchronization between clusters](#enable-synchronize-between-clusters)
+- [Verify remote cluster connections](#verify-remote-cluster-connections)
+- [Verify multi-cluster networking](#verify-multi-cluster-networking)
+- [Troubleshoot](#troubleshoot)
+
+### Enable authentication between local and remote clusters
+
+To use federated endpoints for use with network policy, you need to authenticate local clusters to connect to remote clusters.
+
+Complete the following steps for **each cluster in the cluster mesh**.
+
+1. Create the ServiceAccount used by remote clusters for authentication:
+
+   ```bash
+   kubectl apply -f {{filesUrl}}/manifests/federation-remote-sa.yaml
+   ```
+
+1. If RBAC is enabled, create the ClusterRole and ClusterRoleBinding used by remote clusters for authorization:
+
+   ```bash
+   kubectl apply -f {{filesUrl}}/manifests/federation-rem-rbac-kdd.yaml
+   ```
+
+1. Using an existing kubeconfig file with administrative privileges:
+
+    Open a file in your favorite editor. Consider establishing a naming scheme unique to each cluster, e.g. `kubeconfig-app-a`.
+
+    Paste the following into the file - we will replace the templated values with data retrieved in following steps.
+   ```yaml
+   apiVersion: v1
+   kind: Config
+   users:
+     - name: tigera-federation-remote-cluster
+       user:
+         token: <YOUR-SERVICE-ACCOUNT-TOKEN>
+   clusters:
+     - name: tigera-federation-remote-cluster
+       cluster:
+         certificate-authority-data: <YOUR-CERTIFICATE-AUTHORITY-DATA>
+         server: <YOUR-SERVER-ADDRESS>
+   contexts:
+     - name: tigera-federation-remote-cluster-ctx
+       context:
+         cluster: tigera-federation-remote-cluster
+         user: tigera-federation-remote-cluster
+   current-context: tigera-federation-remote-cluster-ctx
+   ```
+
+1. Get the ServiceAccount token:
+
+   #### If using Kubernetes >= 1.24
+   - Create the ServiceAccount token:
+   ```bash
+   kubectl apply -f - <<EOF
+   apiVersion: v1
+   kind: Secret
+   type: kubernetes.io/service-account-token
+   metadata:
+     name: tigera-federation-remote-cluster
+     namespace: kube-system
+     annotations:
+       kubernetes.io/service-account.name: "tigera-federation-remote-cluster"
+   EOF
+   ```
+   - Get the ServiceAccount token value and replace `<YOUR-SERVICE-ACCOUNT-TOKEN>` with it's value:
+   ```bash
+   kubectl describe secret tigera-federation-remote-cluster -n kube-system
+   ```
+
+   #### If using Kubernetes < 1.24
+   - Get the ServiceAccount token value and replace `<YOUR-SERVICE-ACCOUNT-TOKEN>` with it's value:
+   ```bash
+   kubectl describe secret -n kube-system $(kubectl get serviceaccounts tigera-federation-remote-cluster -n kube-system -o jsonpath='{.secrets[0].name}')
+   ```
+
+1. Get and save the certificate authority and server data:
+
+   Run the following command:
+   ```bash
+   kubectl config view --flatten --minify
+   ```
+   Replace `<YOUR-CERTIFICATE-AUTHORITY-DATA>` and `<YOUR-SERVER-ADDRESS>` with `certificate-authority-data` and `server` values respectively.
+
+1. Verify that the `kubeconfig` file works:
+
+   Issue a command like the following to verify the kubeconfig file can be used to connect to the current cluster and access resources:
+   ```bash
+   kubectl --kubeconfig=kubeconfig-app-a get nodes
+   ```
+
+### Configure synchronization between clusters
+
+In this step, you create the RemoteClusterConfigurations that establishes all communications and synchronization between clusters.
+
+:::note
+The RemoteClusterconfiguration works in one direction. However, you must create the RemoteClusterconfiguration for each pair of clusters in the cluster mesh for multi-cluster networking and policy to work. Using RemoteClusterConfiguration for unidirectional connections can be made at your own discretion.
+:::
+
+Complete the following steps **for each pair** of clusters in the cluster mesh (e.g. cluster A and cluster B):
+
+1. In cluster A, create a secret that contains the kubeconfig for cluster B:
+
+   Determine the namespace (`<namespace>`) for the secret to replace in all steps.
+   The simplest method to create a secret for a remote cluster is to use the `kubectl` command because it correctly encodes the data and formats the file.
+   ```bash
+   kubectl create secret generic remote-cluster-secret-name -n <namespace> \
+      --from-literal=datastoreType=kubernetes \
+      --from-file=kubeconfig=<kubeconfig file>
+   ```
+
+1. If RBAC is enabled in cluster A, create a Role and RoleBinding that {{prodname}} will use to access the secret that contains the kubeconfig for cluster B:
+   ```bash
+   kubectl create -f - <<EOF
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: Role
+   metadata:
+     name: remote-cluster-secret-access
+     namespace: <namespace>
+   rules:
+   - apiGroups: [""]
+     resources: ["secrets"]
+     verbs: ["watch", "list", "get"]
+   ---
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: RoleBinding
+   metadata:
+     name: remote-cluster-secret-access
+     namespace: <namespace>
+   roleRef:
+     apiGroup: rbac.authorization.k8s.io
+     kind: Role
+     name: remote-cluster-secret-access
+   subjects:
+   - kind: ServiceAccount
+     name: calico-typha
+     namespace: calico-system
+   EOF
+   ```
+
+1. Create the RemoteClusterConfiguration in cluster A:
+
+   Within the RemoteClusterConfiguration, we specify the secret used to access cluster B, and the overlay routing mode which toggles the establishment of cross-cluster overlay routes.
+   ```yaml
+   kubectl create -f - <<EOF
+   apiVersion: projectcalico.org/v3
+   kind: RemoteClusterConfiguration
+   metadata:
+     name: cluster-b
+   spec:
+     clusterAccessSecret:
+       name: remote-cluster-secret-name
+       namespace: <namespace>
+       kind: Secret
+     syncOptions:
+       overlayRoutingMode: Enabled
+   EOF
+   ```
+
+1. If IP pools for your local clusters are configured with `NATOutgoing`, verify the following:
+
+- Configure additional IP pools to cover the IP ranges of your remote clusters. This ensures that outgoing NAT is not performed on packets bound for the remote clusters.
+- On the new IP pools, ensure that `disabled` is set to `true` to ensure the pools are not used for IP assignment on the local cluster.
+- Verify that the IP pool CIDR used for pod IP allocation does not overlap with any of the IP ranges used by the pods and nodes of any other federated cluster.
+
+For example, you can configure the following on your local cluster, referring to the `IPPool` on a remote cluster:
+
+```yaml
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: cluster1-main-pool
+spec:
+  cidr: 192.168.0.0/18
+  disabled: true
+```
+
+### Verify remote cluster connections
+
+Run the following command to verify that a local cluster is connected to it's configured remote clusters (RemoteClusterConfiguration):
+
+```bash
+calicoq eval "all()"
+```
+If all remote clusters are accessible, calicoq returns something like the following and it means federated endpoints are working. Note the remote cluster prefixes: there should be endpoints prefixed with the name of each RemoteClusterConfiguration in the local cluster.
+```
+Endpoints matching selector all():
+  Workload endpoint remote-cluster-1/host-1/k8s/kube-system.kube-dns-5fbcb4d67b-h6686/eth0
+  Workload endpoint remote-cluster-1/host-2/k8s/kube-system.cnx-manager-66c4dbc5b7-6d9xv/eth0
+  Workload endpoint host-a/k8s/kube-system.kube-dns-5fbcb4d67b-7wbhv/eth0
+  Workload endpoint host-b/k8s/kube-system.cnx-manager-66c4dbc5b7-6ghsm/eth0
+```
+(Optional) To check the remote cluster connection status, see the [Prometheus metrics for Typha](../../reference/component-resources/typha/prometheus#metric-reference).
+
+If either output contains unexpected results, see [Troubleshooting](#troubleshooting).
+
+### Verify multi-cluster networking
+
+To verify that multi-cluster networking is working, establish a connection from a pod in a local cluster, to the IP of a pod in a remote cluster. Ensure that there is no policy in either cluster that is blocking this connection.
+
+### Repeat all steps in this section
+
+Go back to the beginning of this section and complete the steps for all cluster pairs in the cluster mesh.
+
+### Troubleshoot
+
+#### Issues with clusters and endpoints
+
+For each impacted remote cluster pair (between cluster A and cluster B):
+1. Get the kubeconfig from the secret stored in cluster A. Manually verify that it can be used to connect to cluster B.
+   ```bash
+   kubectl get secret -n <namespace> remote-cluster-secret-name -o=jsonpath="{.data.kubeconfig}" | base64 -d > verify_kubeconfig_b
+   kubectl --kubeconfig=verify_kubeconfig_b get nodes
+   ```
+2. Verity that the Typha service account in cluster A is authorized to retrieve the kubeconfig secret for cluster B.
+   ```bash
+    kubectl auth can-i list secrets --namespace <namespace> --as=system:serviceaccount:calico-system:calico-typha
+   ```
+3. Repeat the above, switching cluster A to cluster B.
+
+The output from calicoq may also provide insight into where issues may be occurring.
+
+If the above steps do not provide useful information, check the `typha` and `calico-node` logs for relevant errors or warnings.
+
+#### Issues with multi-cluster networking
+
+- Verify RemoteClusterConfiguration and federated endpoints are functioning correctly
+- Verify all [requirements](#before-you-begin) for multi-cluster networking have been met
+* Verify that a network policy or firewall is not causing packets to be dropped
+* Check the `typha` and `calico-node` logs for any relevant errors or warnings
+
+## Next step
+
+The next step is set up federated services discovery. If you have your own service discover mechanism, you can skip this step.
+
+- [Configure federated service]((../federation/set-up-services))

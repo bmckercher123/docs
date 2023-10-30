@@ -10,14 +10,7 @@ Configure local clusters to discover services across multiple clusters.
 
 ## Value
 
-Use cluster mesh and federated services discovery along with federated endpoint identity to extend and automate endpoints sharing. (Optional if you have your own service discovery mechanism.)
-
-## Features
-
-This how to guide uses the following {{prodname}} features:
-
-- **Tigera Federated Service Controller**
-- **federation.tigera.io/serviceSelector**
+Use federated services along with federated endpoints to extend and automate endpoints sharing. This feature is optional if you have your own service discovery mechanism.
 
 ## Concepts
 
@@ -25,9 +18,9 @@ This how to guide uses the following {{prodname}} features:
 
 A federated service (also called a backing service), is a set of services with consolidated endpoints. {{prodname}} discovers services across a cluster mesh (both local cluster and remote clusters) and creates a "federated service" on the local cluster that encompasses all of the individual services.
 
-Federated services are managed by the Tigera Federated Service Controller, which monitors and maintains endpoints for each locally-federated service. The controller does not change configuration on remote clusters.
+Federated services are managed by the **Tigera Federated Service Controller**, which monitors and maintains endpoints for each locally-federated service. The controller does not change configuration on remote clusters.
 
-A federated service looks similar to a regular Kubernetes service, but instead of using a pod selector, it uses an annotation. For example:
+A federated service looks similar to a regular Kubernetes service; instead of using a pod selector, it uses an annotation. For example:
 
 ```yaml
 apiVersion: v1
@@ -74,7 +67,7 @@ You can also match services using a label. The label is implicitly added to each
 
 **Required**
 
-- [Configure federated endpoint identity](kubeconfig.mdx)
+- [Cluster mesh is set up](../federation/set-up-cluster-mesh)
 
 ## How to
 
@@ -97,7 +90,7 @@ Kubernetes manages the service by populating the service endpoints from the pods
    service on that cluster leaving the `spec selector` blank.
 1. Set the `federation.tigera.io/serviceSelector` annotation to be a {{prodname}} selector that selects the previously-configured services using the matching label match (for example, `run == "my-app"`).
 
-The Federated Services Controller manages this service, populating the service endpoints from all of the services that match the service selector configured in the annotation.
+The Tigera Federated Services Controller manages this service, populating the service endpoints from all of the services that match the service selector configured in the annotation.
 
 ### Access a federated service
 
