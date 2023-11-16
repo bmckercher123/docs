@@ -25,12 +25,12 @@ documentation.
 
 - The **latest version of calicoctl** must be [installed and configured to access etcd](calicoctl/install.mdx).
 
-  :::note
+:::note
 
-  Since the steps below require modifying calicoctl configuration, we do not recommend using calicoctl installed
-  as a Kubernetes pod for this procedure. Instead, install the binary directly on a host with access to etcd and the Kubernetes API.
+Since the steps below require modifying calicoctl configuration, we do not recommend using calicoctl installed
+as a Kubernetes pod for this procedure. Instead, install the binary directly on a host with access to etcd and the Kubernetes API.
 
-  :::
+:::
 
 ## How To
 
@@ -42,70 +42,70 @@ command and subcommands. For more information, see the
 documentation.
 
 1. Lock the etcd datastore for migration. This prevents any changes to the data from
-   affecting the cluster.
+affecting the cluster.
 
+```
+calicoctl datastore migrate lock
    ```
-   calicoctl datastore migrate lock
-   ```
 
-   :::note
+:::note
 
-   After running the above command, you can not make changes to the configuration of your cluster until the
-   migration is complete. New pods will not be started until after the migration.
+After running the above command, you can not make changes to the configuration of your cluster until the
+migration is complete. New pods will not be started until after the migration.
 
-   :::
+:::
 
 1. Export the datastore contents to a file.
 
-   ```
-   calicoctl datastore migrate export > etcd-data
+```
+calicoctl datastore migrate export > etcd-data
    ```
 
 1. Configure `calicoctl` to access the
-   [Kubernetes datastore](calicoctl/configure/kdd.mdx).
+[Kubernetes datastore](calicoctl/configure/kdd.mdx).
 
 1. Import the datastore contents from your exported file.
 
-   ```
-   calicoctl datastore migrate import -f etcd-data
+```
+calicoctl datastore migrate import -f etcd-data
    ```
 
 1. Verify that the datastore was properly imported. This can be accomplished by using
-   `calicoctl` to query for any {{prodname}} resources that exist in the etcd
-   datastore (e.g. networkpolicy).
+`calicoctl` to query for any {{prodname}} resources that exist in the etcd
+datastore (e.g. networkpolicy).
 
-   ```
-   calicoctl get networkpolicy
+```
+calicoctl get networkpolicy
    ```
 
 1. Configure {{prodname}} to read from the Kubernetes datastore. Follow the
-   directions to install {{prodname}} with the Kubernetes datastore. The
-   installation instructions contain the relevant version of the
-   `calico.yaml` file to apply.
+directions to install {{prodname}} with the Kubernetes datastore. The
+installation instructions contain the relevant version of the
+`calico.yaml` file to apply.
 
-   ```bash
-   kubectl apply -f calico.yaml
+```bash
+kubectl apply -f calico.yaml
    ```
 
 1. Wait for Calico to perform a rolling update before continuing by monitoring the following command
 
-   ```bash
-   kubectl rollout status daemonset calico-node -n kube-system
+```bash
+kubectl rollout status daemonset calico-node -n kube-system
    ```
 
 1. Unlock the datastore. This allows the {{prodname}} resources to affect the cluster again.
 
+```
+calicoctl datastore migrate unlock
    ```
-   calicoctl datastore migrate unlock
-   ```
 
-   :::note
+:::note
 
-   Once the Kubernetes datastore is unlocked, the datastore migration
-   cannot be rolled back. Make sure that the Kubernetes datastore is populated with
-   all of the expected {{prodname}} resources prior to unlocking the datastore.
+Once the Kubernetes datastore is unlocked, the datastore migration
+cannot be rolled back. Make sure that the Kubernetes datastore is populated with
+all of the expected {{prodname}} resources prior to unlocking the datastore.
 
-   :::
+:::
 
 ### Roll back the datastore migration
 
@@ -116,31 +116,31 @@ configure the cluster to once again read from the original etcd datastore.
 
 1. Lock the Kubernetes datastore.
 
-   ```
-   calicoctl datastore migrate lock
+```
+calicoctl datastore migrate lock
    ```
 
 1. Delete all of the {{prodname}} CRDs. This will remove all of the data imported into
-   the Kubernetes datastore.
+the Kubernetes datastore.
 
-   ```bash
-   kubectl delete $(kubectl get crds -o name | grep projectcalico.org)
+```bash
+kubectl delete $(kubectl get crds -o name | grep projectcalico.org)
    ```
 
 1. Configure {{prodname}} to read from the etcd datastore. Follow the
-   directions to install {{prodname}} with the etcd datastore. The
-   installation instructions contain the relevant version of the
-   `calico.yaml` file to apply.
+directions to install {{prodname}} with the etcd datastore. The
+installation instructions contain the relevant version of the
+`calico.yaml` file to apply.
 
-   ```bash
-   kubectl apply -f calico.yaml
+```bash
+kubectl apply -f calico.yaml
    ```
 
 1. Configure `calicoctl` to access the
-   [etcd datastore](calicoctl/configure/etcd.mdx).
+[etcd datastore](calicoctl/configure/etcd.mdx).
 
 1. Unlock the etcd datastore. This allows the {{prodname}} resources to affect the cluster again.
 
-   ```
-   calicoctl datastore migrate unlock
+```
+calicoctl datastore migrate unlock
    ```
