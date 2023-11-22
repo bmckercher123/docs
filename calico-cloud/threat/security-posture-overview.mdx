@@ -4,31 +4,51 @@ description: View the overall risk of your Kubernetes cluster and address high-p
 
 # Security Posture Overview dashboard
 
-:::note
+:::BETA
 
-This feature is tech preview. Tech preview features may be subject to significant changes before they become GA.
+This feature is currently part of an active Beta program and will include significant changes and improvements based on user feedback. If you would like to participate, please reach out to your customer success representative,
 
 :::
 
 ## Big picture
 
-View the overall risk score of your Kubernetes cluster and see a prioritized list of recommended actions to improve your score over time.
+View the overall security posture of your Kubernetes cluster and use a prioritized list of recommended actions to improve your security score over time.
 
 ## Value
 
-Is the security posture of your cluster getting worse or better over time? Do your stakeholders ask for evidence that you are addressing security issues and showing improvement? The Security Posture Overview dashboard allows every team no matter how small, to take steps to improve build and deploy time misconfigurations and failed controls in their environment. Because the dashboard is based on existing {{prodname}} data, no configuration is required. You can start improving the risk of your Kubernetes cluster from day one.
+Is the security posture of your cluster getting worse or better over time? Do your stakeholders ask for evidence that you are addressing security issues and showing improvement?
+
+The Security Posture Overview dashboard allows every team no matter how small, to measure the security posture of their cluster and take steps to reduce risk over time. Because the dashboard is based on existing Calico Cloud data, no configuration is required. You can start improving the security posture of your Kubernetes cluster from day one.
+
 
 ![security-posture-first](/img/calico-cloud/security-posture-first.png)
 
 The {{prodname}} Security Posture Overview dashboard in Manager UI provides:
-- An overall security posture score of the cluster that reflects these high-risk areas:
-  - Namespaces without network policy
-  - Images with vulnerabilities
-  - Egress communications outside the cluster without network policy
-- A prioritized list of recommended actions to improve the score
-- The top 10 namespaces in the cluster with the worst security scores
+- An overall **Security Cluster Score** that measures the following aspects of security posture management:
+  - Namespaces are isolated with a network policy
+  - Running images do not contain critical or high vulnerabilities
+  - Running images have been scanned for vulnerabilities
+  - Egress access to destinations outside the cluster have been secured with network policy
+- A prioritized list of **Recommended Actions** to improve the score
+- A summary of top 10 namespaces by risk
+
+## Concepts
+
+### Security posture management
+
+Security posture management for Kuberetes is the secure configuration of the control plane, applications, and other resources to reduce risk and prevent security events from happening. For each cluster that you connect to {{prodname}}, we calculate a Cluster Security Score based on several risk types and measure its security posture.
+
+### Scoring frequency
+
+By default, {{prodname}} automatically runs risk calculators on every managed cluster approximately every 12 hours (except for Image Assurance, which must first be enabled).
 
 ## Before you begin
+
+:::BETA
+
+This feature is currently part of an active Beta program and will include significant changes and improvements based on user feedback. If you would like to participate, please reach out to your customer success representative,
+
+:::
 
 **Required**
 
@@ -37,8 +57,6 @@ To include image risk assessment in the Cluster Security Score, you must [enable
 **Limitations**
 - The Security Posture Overview dashboard cannot be disabled
 - You cannot customize the Cluster Security Score or the risk assessment time interval
-- You cannot remove remediation actions from the dashboard
-- The security score is available only for a single Kubernetes cluster (not for an entire organization)
 - Updates to the dashboard happen once a day
 
 ## Dashboard walkthrough
@@ -104,7 +122,8 @@ A key mitigation control is {{prodname}}'s automatic [Policy recommendation](../
 ![security-posture-recommendations](/img/calico-cloud/security-posture-recommendations.png)
 
 ### Dismissing recommended actions
-Although you can dismiss and revert a recommended action, {{prodname}} controls removing and updating existing actions.
+
+If you dismiss an action, the risk included in the action are ignored and will no longer affect the security score. Although you can dismiss and revert a recommended action, {{prodname}} controls removing and updating existing actions.
 
 ### Top 10 namespaces at risk
 TBD
